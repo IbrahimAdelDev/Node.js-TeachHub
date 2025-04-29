@@ -1,0 +1,30 @@
+{
+  "name": "teachhub",
+  "version": "1.0.0",
+  "description": "E-learning backend project",
+  "keywords": [
+    "e-learning",
+    "backend",
+    "education",
+    "nodejs",
+    "express"
+  ],
+  "homepage": "https://github.com/IbrahimAdelDev/Node.js-TeachHub#readme",
+  "bugs": {
+    "url": "https://github.com/IbrahimAdelDev/Node.js-TeachHub/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IbrahimAdelDev/Node.js-TeachHub.git"
+  },
+  "license": "UNLICENSED",
+  "author": "Ibrahim Adel Elkerdawy",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
