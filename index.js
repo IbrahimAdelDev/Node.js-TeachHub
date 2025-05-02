@@ -1,18 +1,40 @@
 const express = require('express');
-
-const app = express();
-
+const dotenv = require('dotenv');
 const connectDB = require('./src/db');
+const userRouter = require('./src/routes/userRouter');
+const cors = require('cors');
+
+
+// Load environment variables from .env file
+dotenv.config();
+
+// create our app
+const app = express();
+app.use(express.json());
+
+// connecting to the database
 connectDB();
+
+
+// Middleware to enable CORS
+app.use(cors({
+  origin: 'http://localhost:3000', // Replace with your frontend URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true, // Allow credentials (cookies, authorization headers, etc.)
+}));
+
+
+app.use('/api/users', userRouter);
 
 app.get('/', (req, res) => {
   res.send('Hello, World!');
 });
 
 app.post('/', (req, res) => {
-  res.send('Hello, PostMan!');
+  res.send(`user: hima, email: hima@ex.com`);
 });
 
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
+// Open the server on the port specified in the .env file
+app.listen( process.env.PORT , () => {
+  console.log(`Server is running on port ${process.env.PORT}`);
 });
