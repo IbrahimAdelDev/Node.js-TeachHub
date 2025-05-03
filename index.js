@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const connectDB = require('./src/db');
 const userRouter = require('./src/routes/userRouter');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
 
 // Load environment variables from .env file
@@ -11,6 +12,7 @@ dotenv.config();
 // create our app
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
 
 // connecting to the database
 connectDB();

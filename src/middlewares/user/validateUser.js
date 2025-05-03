@@ -1,6 +1,5 @@
 const validateUser = (req, res, next) => {
   const { username, email, name, password } = req.body;
-  console.log(req.body);
 
   if (!username || !email || !name || !password) {
     return res.status(400).json({ error: `missing required fields` });

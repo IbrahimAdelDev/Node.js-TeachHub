@@ -4,40 +4,46 @@ const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 dotenv.config();
 
+const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
+const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
+const ACCESS_TOKEN_EXPIRES = process.env.ACCESS_TOKEN_EXPIRES;
+const REFRESH_TOKEN_EXPIRES = process.env.REFRESH_TOKEN_EXPIRES;
+
 const loginUser = async (req, res) => {
   try {
     const { username, password } = req.body;
     const existUser = await User.findOne({ username });
 
     if (!existUser) {
-      return res.status(401).json({ message: 'User not found' });
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
 
     // Check if the password is correct
-    await bcrypt.compare(password, existUser.hashPassword, (err, result) => {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-      if (!result) {
-        return res.status(401).json({ message: 'Invalid credentials' });
-      }
-      return result;
-    });
+    const isPasswordValid = await bcrypt.compare(password, existUser.hashPassword);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
 
     // Generate access token
-    const accessToken = await jwt.sign(
+    const accessToken = jwt.sign(
       { userId: existUser.id },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: process.env.ACCESS_TOKEN_EXPIRES }
+      ACCESS_TOKEN_SECRET,
+      { expiresIn: ACCESS_TOKEN_EXPIRES }
     );
-
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      sameSite: 'Strict',
+      secure: false, // Set to true in production
+      maxAge: 15 * 60 * 1000,
+    });
+    
     // Generate refresh token and set it as a cookie
-    const refreshToken = await jwt.sign(
+    const refreshToken = jwt.sign(
       { userId: existUser.id },
-      process.env.REFRESH_TOKEN_SECRET,
-      { expiresIn: process.env.REFRESH_TOKEN_SECRET_EXPIRES }
+      REFRESH_TOKEN_SECRET,
+      { expiresIn: REFRESH_TOKEN_EXPIRES }
     );
-    console.log(refreshToken); // Log the refresh token for debugging
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       sameSite: 'Strict',
@@ -48,9 +54,10 @@ const loginUser = async (req, res) => {
     const { hashPassword: _, ...userWithoutPassword } = existUser.toObject();
     return res
       .status(200)
-      .json({ accessToken, user: userWithoutPassword })
-      .message('Login successful');
+      .json({ message: 'Login successful', token: accessToken, user: userWithoutPassword });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
 };
+
+module.exports = loginUser;
