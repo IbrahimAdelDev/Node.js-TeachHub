@@ -1,7 +1,8 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const connectDB = require('./src/db');
-const userRouter = require('./src/routes/userRouter');
+const userRouter = require('./src/routes/userRoutes');
+const lessonRouter = require('./src/routes/lessonRoutes');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
@@ -14,9 +15,6 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-// connecting to the database
-connectDB();
-
 
 // Middleware to enable CORS
 app.use(cors({
@@ -27,6 +25,7 @@ app.use(cors({
 
 
 app.use('/api/users', userRouter);
+app.use('/api/lessons', lessonRouter);
 
 app.get('/', (req, res) => {
   res.send('Hello, World!');
@@ -36,7 +35,15 @@ app.post('/', (req, res) => {
   res.send(`user: hima, email: hima@ex.com`);
 });
 
-// Open the server on the port specified in the .env file
-app.listen( process.env.PORT , () => {
-  console.log(`Server is running on port ${process.env.PORT}`);
-});
+// connect to the database and start the server
+(async () => {
+  try {
+    await connectDB();
+    app.listen(process.env.PORT, () => {
+      console.log(`✅ Server is running on port ${process.env.PORT}`);
+    });
+  } catch (error) {
+    console.error('❌ Error in running the server: ', error.message);
+    process.exit(1);
+  }
+})(); 

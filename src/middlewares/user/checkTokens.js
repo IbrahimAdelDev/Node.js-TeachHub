@@ -1,5 +1,7 @@
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
+const checkRefreshToken = require('./checkRefreshToken');
+// const User = require('../../models/User');
 dotenv.config();
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
@@ -13,18 +15,16 @@ const authenticateToken = (req, res, next) => {
     token = req.headers['Authorization'] && req.headers['Authorization'].split(' ')[1];  }
 
   if (!token) {
-    return res.status(401).json({ message: 'Unauthorized' });
+    return checkRefreshToken(req, res, next); // Call the refresh token middleware if no access token is found
   }
 
   jwt.verify(token, ACCESS_TOKEN_SECRET, (err, decoded) => {
     if (err) {
-      console.log('Token verification error:', err.message);
-      return next('verifyRefreshToken');
+      return checkRefreshToken(req, res, next); // Call the refresh token middleware if access token verification fails
     }
 
-    req.user = decoded;
-    
-    return res.status(200).json({ message: 'Authenticated'});
+    req.userId = decoded.userId;
+    return next();
   });
 };
 
