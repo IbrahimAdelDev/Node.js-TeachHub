@@ -1,10 +1,11 @@
 const express = require('express');
 const dotenv = require('dotenv');
-const connectDB = require('./src/db');
+const connectDB = require('./src/config/db');
 const userRouter = require('./src/routes/userRoutes');
 const lessonRouter = require('./src/routes/lessonRoutes');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const path = require('path');
 
 
 // Load environment variables from .env file
@@ -24,6 +25,7 @@ app.use(cors({
   credentials: true, // Allow credentials (cookies, authorization headers, etc.)
 }));
 
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 app.use('/api/users', userRouter);
 app.use('/api/lessons', lessonRouter);

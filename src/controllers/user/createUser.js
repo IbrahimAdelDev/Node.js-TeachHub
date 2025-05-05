@@ -5,14 +5,6 @@ const createUser = async (req, res) => {
   try {
     const { username, email, name, password, role } = req.body;
 
-    const existingUser = await User.findOne({
-      $or: [{ email }, { username }],
-    });
-
-    if (existingUser) {
-      return res.status(409).json({ error: `User is exist` });
-    }
-
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
 
