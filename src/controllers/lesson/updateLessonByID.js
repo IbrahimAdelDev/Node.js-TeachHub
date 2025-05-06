@@ -6,7 +6,6 @@ const deleteFromCloudinary = require('./cloudHandle/deleteFiles');
 const updateLessonById = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log(req.body);
     let { title, description, removeVideoUrls = [], removeImageUrls = []} = req.body;
 
     const lesson = await Lesson.findById(id);

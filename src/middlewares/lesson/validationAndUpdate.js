@@ -148,11 +148,6 @@ const uploadLessonUpdateMiddleware = async (req, res, next) => {
       req.body.removeVideoUrls = toArray(req.body.removeVideoUrls).map((url) => ({ url }));
       req.body.removeImageUrls = toArray(req.body.removeImageUrls).map((url) => ({ url }));
 
-      console.log('New Video URLs:', req.body.newVideoUrls);
-      console.log('New Image URLs:', req.body.newImageUrls);
-      console.log('Remove Video URLs:', req.body.removeVideoUrls);
-      console.log('Remove Image URLs:', req.body.removeImageUrls);
-
       next();
     } catch (error) {
       console.error(error);

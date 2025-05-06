@@ -25,12 +25,10 @@ const deleteLessonById = async (req, res) => {
       );
     });
 
-    console.log(imagepublicIds);
     const cloudinaryResponse = await deleteFromCloudinary(
       imagepublicIds,
       'image'
     );
-    console.log(videoPublicIds);
     const cloudinaryResponsevideos = await deleteFromCloudinary(
       videoPublicIds,
       'video'
