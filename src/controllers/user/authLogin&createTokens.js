@@ -37,7 +37,7 @@ const loginUser = async (req, res) => {
     );
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
-      sameSite: 'Strict',
+      sameSite: 'None',
       secure: false, // Set to true in production
       maxAge: 15 * 60 * 1000,
     });
@@ -50,7 +50,7 @@ const loginUser = async (req, res) => {
     );
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      sameSite: 'Strict',
+      sameSite: 'Nnoe',
       secure: false, // Set to true in production
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
