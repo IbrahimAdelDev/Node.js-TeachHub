@@ -44,7 +44,7 @@ app.use(cors({
   credentials: true // علشان الكوكيز تشتغل
 }));
 
-app.options('*', cors()); // علشان preflight requests تعدي
+// app.options('*', cors()); // علشان preflight requests تعدي
 
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
