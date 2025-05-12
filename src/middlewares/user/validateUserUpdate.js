@@ -2,7 +2,10 @@ const User = require('../../models/User');
 
 const isString = (value) => typeof value === 'string';
 const isNumber = (value) => typeof value === 'number';
-const sanitize = (str) => str.replace(/[<>"'`;$]/g, '').trim();
+const sanitize = (str) => {
+  if (typeof str !== 'string') return ''; 
+  return str.replace(/[<>"'`;$]/g, '').trim();
+};
 
 const cleanUpdateData = (allowedFields = []) => {
   return async (req, res, next) => {
@@ -20,10 +23,15 @@ const cleanUpdateData = (allowedFields = []) => {
       }
     });
     req.body = cleanedData;
-    let { username, email, name, exams, trueQuestions, falseQuestions } = req.body;
+    let { username, email, name, exams, trueQuestions, falseQuestions } =
+      req.body;
 
-    if (![username, email, name, exams, trueQuestions, falseQuestions].every(isString)) {
-      return res.status(400).json({ error: `All fields must be strings` });
+    if (![username, email, name].every(isString)) {
+      return res.status(400).json({ error: `Some must be strings` });
+    }
+
+    if (![exams, trueQuestions, falseQuestions].every(isNumber)) {
+      return res.status(400).json({ error: `Some must be numbers` });
     }
 
     username = sanitize(username);
@@ -46,22 +54,26 @@ const cleanUpdateData = (allowedFields = []) => {
         .status(400)
         .json({ error: `username, email or name is too long` });
     }
-    
+
     const userId = req.params.id;
     try {
-      const existingUser = await User.findOne(userId);
-  
+      const existingUser = await User.findById(userId);
+
       if (!existingUser) {
         return res.status(401).json({ message: 'User not found' });
       }
-  
+
       req.body.username = username;
       req.body.email = email;
       req.body.name = name;
       req.body.exams = exams;
-      req.body.trueQuestions = trueQuestions ? trueQuestions : existingUser.trueQuestions;
-      req.body.falseQuestions = falseQuestions ? falseQuestions : existingUser.falseQuestions;
-      req.body.questions = req.body.trueQuestions + req.body.falseQuestions;      
+      req.body.trueQuestions = trueQuestions
+        ? trueQuestions
+        : existingUser.trueQuestions;
+      req.body.falseQuestions = falseQuestions
+        ? falseQuestions
+        : existingUser.falseQuestions;
+      req.body.questions = req.body.trueQuestions + req.body.falseQuestions;
       next();
     } catch (err) {
       console.error('Validation error:', err);
@@ -71,4 +83,3 @@ const cleanUpdateData = (allowedFields = []) => {
 };
 
 module.exports = cleanUpdateData;
-

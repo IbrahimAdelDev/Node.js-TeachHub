@@ -18,11 +18,23 @@ app.use(cookieParser());
 
 
 // Middleware to enable CORS
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://react-teach-hub.vercel.app'
+];
+
 app.use(cors({
-  origin: 'http://localhost:3000', // Replace with your frontend URL
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true, // Allow credentials (cookies, authorization headers, etc.)
+  credentials: true,
 }));
 
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
@@ -34,9 +46,6 @@ app.get('/', (req, res) => {
   res.send('Hello, World!');
 });
 
-app.post('/', (req, res) => {
-  res.send(`user: hima, email: hima@ex.com`);
-});
 
 // connect to the database and start the server
 (async () => {

@@ -16,9 +16,10 @@ const checkRoleAuthorization = require('../middlewares/user/checkRoleAuthorizati
 
 router.get('/', checkToken, checkRoleAuthorization(['admin', 'superadmin']), getAllUsers); // Get all users
 router.get('/auth', checkToken, authUser); // Regenerate access token using refresh token
+router.get('/auth/admin', checkToken, checkRoleAuthorization(['admin', 'superadmin']), authUser); // Regenerate access token using refresh token for admin
 router.get('/auth/logout', checkToken, authLogout); // Logout a user and delete tokens
 router.get('/user/:id', checkToken, getUserByID); // Get a user by ID
-router.post('/user/create', checkToken, validateUser, checkRoleAuthorization(['admin', 'superadmin']), createUser); // Create a new user
+router.post('/user/create', validateUserUpdate, createUser); // Create a new user
 router.put(
   '/user/update/:id',
   checkToken,

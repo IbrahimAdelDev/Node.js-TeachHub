@@ -57,6 +57,7 @@ const validateUser = async (req, res, next) => {
     req.body.username = username;
     req.body.email = email;
     req.body.name = name;
+    req.body.role = 'user'; // Default role
     next();
   } catch (err) {
     console.error('Validation error:', err);
