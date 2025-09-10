@@ -34,7 +34,8 @@ const verifyRefreshToken = async (req, res, next) => {
     res.cookie('accessToken', newAccessToken, {
       httpOnly: true,
       secure: true,
-      sameSite: 'None',
+      // sameSite: 'None',
+      sameSite: 'strict',
       maxAge: 15 * 60 * 1000,
     });
 

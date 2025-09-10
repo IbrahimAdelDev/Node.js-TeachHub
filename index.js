@@ -6,6 +6,8 @@ const lessonRouter = require('./src/routes/lessonRoutes');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const path = require('path');
+const { swaggerUi, swaggerDocument } = require("./swagger/swagger.js");
+
 
 
 // Load environment variables from .env file
@@ -41,20 +43,25 @@ app.use(cors({
   origin: ['http://localhost:5173', 'https://react-teach-hub.vercel.app'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true // علشان الكوكيز تشتغل
+  credentials: true,
 }));
 
-// app.options('*', cors()); // علشان preflight requests تعدي
 
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 app.use('/api/users', userRouter);
 app.use('/api/lessons', lessonRouter);
 
+
+
 app.get('/', (req, res) => {
   res.send('Hello, World!');
 });
+app.get('/api', (req, res) => {
+  res.send('API is running...');
+});
 
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // connect to the database and start the server
 (async () => {

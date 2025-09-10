@@ -1,0 +1,1071 @@
+openapi: 3.0.0
+info:
+  title: TeachHub API
+  version: 1.0.0
+  description: API documentation with Swagger (Node.js + Express + JWT)
+
+servers:
+  - url: http://localhost:5000
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "64a1b2c3d4e5f6g7h8i9j0"
+        username:
+          type: string
+          example: "ibrahim123"
+        email:
+          type: string
+          example: "ibrahim@example.com"
+        name:
+          type: string
+          example: "Ibrahim Adel"
+        hashPassword:
+          type: string
+          example: "hashed_password"
+        role:
+          type: string
+          example: "admin"
+        exams:
+          type: number
+          example: 5
+        questions:
+          type: number
+          example: 20
+        trueQuestions:
+          type: number
+          example: 15
+        falseQuestions:
+          type: number
+          example: 5
+
+    Lesson:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "650a1b2c3d4e5f6g7h8i9j"
+        title:
+          type: string
+          example: "Introduction to Algebra"
+        description:
+          type: string
+          example: "This lesson covers basic algebra concepts."
+        videoUrl:
+          type: array
+          items:
+            type: string
+          example: ["https://cloud-storage.com/lessons/algebra-intro.mp4"]
+        imageUrl:
+          type: array
+          items:
+            type: string
+          example: ["https://cloud-storage.com/lessons/algebra-thumbnail.jpg"]
+        hlsUrl:
+          type: array
+          items:
+            type: string
+          example: ["https://cloud-storage.com/lessons/algebra-intro.m3u8"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Users
+    description: User management and authentication
+  - name: Lessons
+    description: Lesson management (CRUD)
+
+paths:
+  /api/users:
+    get:
+      summary: Get all users (Admin only)
+      tags:
+        - Users
+      parameters:
+        - name: accessToken
+          in: cookie
+          description: Access token for authentication
+          required: true
+          schema:
+            type: string
+        - name: refreshToken
+          in: cookie
+          description: Refresh token for authentication & getting new access token
+          required: false
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                      example: "64a1b2c3d4e5f6g7h8i9j0"
+                    username:
+                      type: string
+                      example: "ibrahim123"
+                    email:
+                      type: string
+                      example: "ibrahim@example.com"
+                    name:
+                      type: string
+                      example: "Ibrahim Adel"
+                    role:
+                      type: string
+                      example: "admin"
+                    exams:
+                      type: number
+                      example: 5
+                    questions:
+                      type: number
+                      example: 20
+                    trueQuestions:
+                      type: number
+                      example: 15
+                    falseQuestions:
+                      type: number
+                      example: 5
+        '401':
+          description: Unauthorized - no token or invalid token
+        '403':
+          description: Forbidden - not admin
+        '404':
+          description: No users found
+        '500':
+          description: Internal server error
+
+  /api/users/auth:
+    get:
+      summary: Regenerate access token using refresh token
+      tags:
+        - Users
+      parameters:
+        - name: accessToken
+          in: cookie
+          description: Access token for authentication
+          required: true
+          schema:
+            type: string
+        - name: refreshToken
+          in: cookie
+          description: Refresh token for authentication & getting new access token
+          required: false
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: New access token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  user:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                        example: "64a1b2c3d4e5f6g7h8i9j0"
+                      username:
+                        type: string
+                        example: "ibrahim123"
+                      email:
+                        type: string
+                        example: "ibrahim@example.com"
+                      name:
+                        type: string
+                        example: "Ibrahim Adel"
+                      exams:
+                        type: number
+                        example: 5
+                      questions:
+                        type: number
+                        example: 20
+                      trueQuestions:
+                        type: number
+                        example: 15
+                      falseQuestions:
+                        type: number
+                        example: 5
+                  message:
+                    type: string
+                    example: "User authenticated successfully"
+        '401':
+          description: Unauthorized - no token or invalid token
+        '404':
+          description: User not found
+        '500':
+          description: Internal server error
+
+  /api/users/auth/admin:
+    get:
+      summary: Regenerate access token for admins
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: accessToken
+          in: cookie
+          description: Current admin access token stored in cookie
+          required: true
+          schema:
+            type: string
+        - name: refreshToken
+          in: cookie
+          description: Current admin refresh token stored in cookie
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: New admin access token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  user:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                        example: "64a1b2c3d4e5f6g7h8i9j0"
+                      username:
+                        type: string
+                        example: "adminUser"
+                      email:
+                        type: string
+                        example: "admin@example.com"
+                      name:
+                        type: string
+                        example: "Admin Name"
+                      exams:
+                        type: number
+                        example: 10
+                      questions:
+                        type: number
+                        example: 50
+                      trueQuestions:
+                        type: number
+                        example: 40
+                      falseQuestions:
+                        type: number
+                        example: 10
+                  message:
+                    type: string
+                    example: "User authenticated successfully"
+        '401':
+          description: Unauthorized - no token or invalid token
+        '403':
+          description: Forbidden - not admin
+        '404':
+          description: User not found
+        '500':
+          description: Internal server error
+
+  /api/users/auth/logout:
+    get:
+      summary: Logout a user and delete tokens
+      tags:
+        - Users
+      parameters:
+        - name: accessToken
+          in: cookie
+          description: Access token for authentication
+          required: true
+          schema:
+            type: string
+        - name: refreshToken
+          in: cookie
+          description: Refresh token for authentication
+          required: false
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User logged out successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Logged out successfully"
+        '401':
+          description: Unauthorized - no token or invalid token
+        '500':
+          description: Internal server error
+
+  /api/users/user/{id}:
+    get:
+      summary: Get a user by ID
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: ID of the user to retrieve
+          schema:
+            type: string
+        - name: accessToken
+          in: cookie
+          description: Access token for authentication
+          required: true
+          schema:
+            type: string
+        - name: refreshToken
+          in: cookie
+          description: Refresh token for authentication
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User object
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                    example: "64a1b2c3d4e5f6g7h8i9j0"
+                  username:
+                    type: string
+                    example: "ibrahim123"
+                  email:
+                    type: string
+                    example: "ibrahim@example.com"
+                  name:
+                    type: string
+                    example: "Ibrahim Adel"
+                  exams:
+                    type: number
+                    example: 5
+                  questions:
+                    type: number
+                    example: 20
+                  trueQuestions:
+                    type: number
+                    example: 15
+                  falseQuestions:
+                    type: number
+                    example: 5
+        '401':
+          description: Unauthorized - no token or invalid token
+        '404':
+          description: User not found
+        '500':
+          description: Internal server error
+
+  /api/users/user/create:
+    post:
+      summary: Create a new user
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - username
+                - password
+              properties:
+                name:
+                  type: string
+                  example: "Ibrahim Adel"
+                email:
+                  type: string
+                  example: "ibrahim@example.com"
+                username:
+                  type: string
+                  example: "ibrahim123"
+                password:
+                  type: string
+                  example: "securePassword123#"
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                    example: "64a1b2c3d4e5f6g7h8i9j0"
+                  username:
+                    type: string
+                    example: "ibrahim123"
+                  email:
+                    type: string
+                    example: "ibrahim@example.com"
+                  name:
+                    type: string
+                    example: "Ibrahim Adel"
+                  role:
+                    type: string
+                    example: "user"
+        '400':
+          description: Bad request - validation error
+        '500':
+          description: Internal server error
+
+  /api/users/user/update/{id}:
+    put:
+      summary: Update a user by ID
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - name: accessToken
+          in: cookie
+          description: Access token for authentication
+          required: true
+          schema:
+            type: string
+        - name: refreshToken
+          in: cookie
+          description: Refresh token for authentication
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Ibrahim Adel"
+                email:
+                  type: string
+                  example: "ibrahim@example.com"
+                username:
+                  type: string
+                  example: "ibrahim123"
+                exams:
+                  type: number
+                  example: 6
+                trueQuestions:
+                  type: number
+                  example: 16
+                falseQuestions:
+                  type: number
+                  example: 4
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        example: "Ibrahim Adel"
+                      email:
+                        type: string
+                        example: "ibrahim@example.com"
+                      username:
+                        type: string
+                        example: "ibrahim123"
+                      exams:
+                        type: number
+                        example: 5
+                      trueQuestions:
+                        type: number
+                        example: 15
+                      falseQuestions:
+                        type: number
+                        example: 5
+                  message:
+                    type: string
+                    example: "User updated successfully"
+        '401':
+          description: Unauthorized - no token or invalid token
+        '403':
+          description: Forbidden - not admin
+        '404':
+          description: User not found
+        '500':
+          description: Internal server error
+
+  /api/users/user/delete/{id}:
+    delete:
+      summary: Delete a user by ID (Admin only)
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User deleted successfully"
+        '401':
+          description: Unauthorized - no token or invalid token
+        '403':
+          description: Forbidden - not admin
+        '404':
+          description: User not found
+        '500':
+          description: Internal server error
+
+  /api/users/auth/login:
+    post:
+      summary: Login a user and create tokens
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  example: "ibrahim123"
+                password:
+                  type: string
+                  example: "securePassword123#"
+      responses:
+        '200':
+          description: Login successful, tokens created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Login successful"
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  user:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                        example: "64a1b2c3d4e5f6g7h8i9j0"
+                      username:
+                        type: string
+                        example: "ibrahim123"
+                      email:
+                        type: string
+                        example: "ibrahim@example.com"
+                      name:
+                        type: string
+                        example: "Ibrahim Adel"
+                      role:
+                        type: string
+                        example: "user"
+                      exams:
+                        type: number
+                        example: 5
+                      questions:
+                        type: number
+                        example: 20
+                      trueQuestions:
+                        type: number
+                        example: 15
+                      falseQuestions:
+                        type: number
+                        example: 5
+        '401':
+          description: Invalid credentials
+        '500':
+          description: Internal server error
+
+  # -------------------- LESSONS ROUTES --------------------
+
+  /api/lessons:
+    get:
+      summary: Get all lessons
+      tags: 
+        - Lessons
+      parameters:
+        - name: accessToken
+          in: cookie
+          description: Access token for authentication
+          required: true
+          schema:
+            type: string
+        - name: refreshToken
+          in: cookie
+          description: Refresh token for authentication & getting new access token
+          required: false
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lessons fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lessons fetched successfully"
+                  lessons:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _id:
+                          type: string
+                          example: "64a1b2c3d4e5f6g7h8i9j0"
+                        title:
+                          type: string
+                          example: "Introduction to IoT"
+                        description:
+                          type: string
+                          example: "Basics of Internet of Things"
+                        videoUrl:
+                          type: array
+                          items:
+                            type: string
+                            format: uri
+                          example: ["https://cloud-storage.com/lessons/iot-intro.mp4"]
+                        imageUrl:
+                          type: array
+                          items:
+                            type: string
+                            format: uri
+                          example: ["https://cloud-storage.com/lessons/iot-intro.jpg"]
+                        hlsUrl:
+                          type: array
+                          items:
+                            type: string
+                            format: uri
+                          example: ["https://cloud-storage.com/lessons/iot-intro.m3u8"]
+                        createdAt:
+                          type: string
+                          format: date-time
+                        updatedAt:
+                          type: string
+                          format: date-time
+        '404':
+          description: No lessons found
+        '500':
+          description: Error fetching lessons
+
+  /api/lessons/lesson/create:
+    post:
+      summary: Create a new lesson (Admin only)
+      tags:
+        - Lessons
+      parameters:
+        - name: accessToken
+          in: cookie
+          description: Access token for authentication
+          required: true
+          schema:
+            type: string
+        - name: refreshToken
+          in: cookie
+          description: Refresh token for authentication
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                videoUrl:
+                  type: array
+                  items:
+                    type: string
+                    format: uri
+                  example: ["https://cloud-storage.com/lessons/iot-intro.mp4"]
+                imageUrl:
+                  type: array
+                  items:
+                    type: string
+                    format: uri
+                  example: ["https://cloud-storage.com/lessons/iot-intro.jpg"]
+                hlsUrl:
+                  type: array
+                  items:
+                    type: string
+                    format: uri
+                  example: ["https://cloud-storage.com/lessons/iot-intro.m3u8"]
+      responses:
+        '201':
+          description: Lesson created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lesson created successfully"
+                  lesson:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                        example: "64a1b2c3d4e5f6g7h8i9j0"
+                      title:
+                        type: string
+                        example: "Introduction to IoT"
+                      description:
+                        type: string
+                        example: "Basics of Internet of Things"
+                      videoUrls:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type: string
+                              example: "https://example.com/video.mp4"
+                      imageUrls:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type: string
+                              example: "https://example.com/image.png"
+                      hlsUrls:
+                        type: array
+                        items:
+                          type: string
+                          example: "https://example.com/stream.m3u8"
+        '400':
+          description: Error creating lesson
+        '401':
+          description: Unauthorized - no token or invalid token
+        '403':
+          description: Forbidden - not admin
+        '500':
+          description: Error creating lesson
+
+  /api/lessons/lesson/{id}:
+    get:
+      summary: Get a lesson by ID
+      tags:
+        - Lessons
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - name: accessToken
+          in: cookie
+          description: Access token for authentication
+          required: true
+          schema:
+            type: string
+        - name: refreshToken
+          in: cookie
+          description: Refresh token for authentication
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lesson object
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                    example: "64a1b2c3d4e5f6g7h8i9j0"
+                  title:
+                    type: string
+                    example: "Introduction to IoT"
+                  description:
+                    type: string
+                    example: "Basics of Internet of Things"
+                  videoUrls:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        url:
+                          type: string
+                          example: "https://example.com/video.mp4"
+                  imageUrls:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        url:
+                          type: string
+                          example: "https://example.com/image.png"
+                  hlsUrls:
+                    type: array
+                    items:
+                      type: string
+                      example: "https://example.com/stream.m3u8"
+        '401':
+          description: Unauthorized - no token or invalid token
+        '404':
+          description: Lesson not found
+        '500':
+          description: Internal server error
+
+  /api/lessons/lesson/update/{id}:
+    put:
+      summary: Update a lesson by ID (Admin only)
+      tags:
+        - Lessons
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - name: accessToken
+          in: cookie
+          description: Access token for authentication
+          required: true
+          schema:
+            type: string
+        - name: refreshToken
+          in: cookie
+          description: Refresh token for authentication
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: "Updated IoT Introduction"
+                description:
+                  type: string
+                  example: "Updated description for IoT course"
+                newVideoUrls:
+                  type: array
+                  items:
+                    type: string
+                    example: "https://example.com/newVideo.mp4"
+                newImageUrls:
+                  type: array
+                  items:
+                    type: string
+                    example: "https://example.com/newImage.png"
+                removeVideoUrls:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      url:
+                        type: string
+                        example: "https://example.com/oldVideo.mp4"
+                removeImageUrls:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      url:
+                        type: string
+                        example: "https://example.com/oldImage.png"
+      responses:
+        '200':
+          description: Lesson updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lesson updated successfully"
+                  lesson:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                        example: "64a1b2c3d4e5f6g7h8i9j0"
+                      title:
+                        type: string
+                        example: "Updated IoT Introduction"
+                      description:
+                        type: string
+                        example: "Updated description for IoT course"
+                      videoUrls:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type: string
+                              example: "https://example.com/video.mp4"
+                      imageUrls:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type: string
+                              example: "https://example.com/image.png"
+                      hlsUrls:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type: string
+                              example: "https://example.com/video.m3u8"
+        '400':
+          description: Bad request - validation error
+        '401':
+          description: Unauthorized - no token or invalid token
+        '403':
+          description: Forbidden - not admin
+        '500':
+          description: Error updating lesson
+
+  /api/lessons/lesson/delete/{id}:
+    delete:
+      summary: Delete a lesson by ID (Admin only)
+      tags:
+        - Lessons
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - name: accessToken
+          in: cookie
+          required: true
+          schema:
+            type: string
+        - name: refreshToken
+          in: cookie
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lesson deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lesson deleted successfully"
+                  cloudinaryResponse:
+                    type: array
+                    items:
+                      type: object
+                    description: Response from deleting images from Cloudinary
+                  cloudinaryResponsevideos:
+                    type: array
+                    items:
+                      type: object
+                    description: Response from deleting videos from Cloudinary
+        '401':
+          description: Unauthorized - no token or invalid token
+        '403':
+          description: Forbidden - not admin
+        '404':
+          description: Lesson not found
+        '500':
+          description: Error deleting lesson
